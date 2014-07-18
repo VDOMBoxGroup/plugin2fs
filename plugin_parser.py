@@ -302,7 +302,7 @@ class MacrosTagHandler(TagHandler):
 
         Parser().write_file(
             u"{}.vscript.vb".format(self.attrs["name"]),
-            self.attrs.pop("source")
+            clear_data(self.attrs.pop("source"))
         )     
 
         Parser().write_file(
@@ -317,7 +317,7 @@ class MacrosTagHandler(TagHandler):
         if data:
             Parser().write_file(
                 u"{}.icon".format(self.attrs["name"]),
-                base64.b64decode(self.io.getvalue())
+                base64.b64decode(clear_data(self.io.getvalue()))
             )
 
         Parser().pop_from_current_path()
@@ -383,7 +383,7 @@ class PluginTagHandler(TagHandler):
         if self.attrs["picture"]:
             Parser().write_file(
                 PLUGIN_ICON,
-                base64.b64decode(self.attrs["picture"])
+                base64.b64decode(clear_data(self.attrs["picture"]))
             )
 
 
