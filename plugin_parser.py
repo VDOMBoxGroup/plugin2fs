@@ -6,25 +6,31 @@ import collections
 import cStringIO
 import json
 import os
+import shutil
 import sys
 import xml.parsers.expat
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 
 
 JSON_INDENT = 4
 
 
-INFO_JSON = "__info__.json"
-PLUGIN_ICON = "plugin.icon"
-CUSTOM_EVENTS_JSON = "custom_events.json"
-TIMERS_JSON = "timers.json"
+INFO_JSON = u"__info__.json"
+PLUGIN_ICON = u"plugin.icon"
+CUSTOM_EVENTS_JSON = u"custom_events.json"
+TIMERS_JSON = u"timers.json"
+GIT_DIR = u".git"
+SVN_DIR = u".svn"
+
 
 RESERVED_NAMES = (
     INFO_JSON,
     PLUGIN_ICON,
     CUSTOM_EVENTS_JSON,
-    TIMERS_JSON
+    TIMERS_JSON,
+    GIT_DIR,
+    SVN_DIR
 )
 
 
@@ -40,19 +46,43 @@ def clear_data(data):
     return data.strip(' \t\n\r')
 
 
-def create_dir(name):
+def clear_dir(path):
+    """Remove all folders and files in dir @path
+       except .git and .svn
+    """
+    for node in os.listdir(path):
+        if node in (GIT_DIR, SVN_DIR):
+            continue
+
+        node_path = os.path.join(path, node)
+        (shutil.rmtree if os.path.isdir(node_path) else os.remove)(node_path)
+
+
+def create_unic_dir_name(app_path):
+    """Create directory with unique name
+    """
+    i = 0
+    while os.path.exists(u"{0}{1}".format(app_path, i)):
+        i += 1
+
+    return u"{0}{1}".format(app_path, i)
+
+
+def create_dir(app_path):
     """If folder @name exists then create another new
     """
-    app_path = name
-    if os.path.exists(app_path):
+    if not os.path.exists(app_path):
+        os.mkdir(app_path)
 
-        i = 0
-        while os.path.exists("{0}{1}".format(app_path, i)):
-            i += 1
+    else:
+        result = raw_input(u"{} already exists. Do you want to override it? Y or N\n".format(app_path))
+        if result.lower() == "y":
+            clear_dir(app_path)
 
-        app_path = "{0}{1}".format(app_path, i)
-
-    os.mkdir(app_path)
+        else:
+            app_path = create_unic_dir_name(app_path)
+            os.mkdir(app_path)
+    
     return app_path
 
 
@@ -128,7 +158,7 @@ class TimerAndEventsTagHandler(TagHandler):
         self.allow_data = False
 
         if tagname in self.ATTRS:
-            self.attrs[self.current_attr] = clear_data("".join(self.attrs[self.current_attr]))
+            self.attrs[self.current_attr] = clear_data(u"".join(self.attrs[self.current_attr]))
             self.current_attr = ""
 
         elif tagname == self.tagname:
@@ -200,7 +230,7 @@ class DatabaseAndResourceTagHandler(TagHandler):
         Parser().append_to_current_path(self.FOLDER)
         Parser().write_file(
             self.obj_name,
-            base64.b64decode(self.io.getvalue())
+            base64.b64decode(clear_data(self.io.getvalue()))
         )
         Parser().pop_from_current_path()
 
@@ -271,12 +301,12 @@ class MacrosTagHandler(TagHandler):
         Parser().append_to_current_path("Macroses")
 
         Parser().write_file(
-            "{}.asa".format(self.attrs["name"]),
+            u"{}.vscript.vb".format(self.attrs["name"]),
             self.attrs.pop("source")
         )     
 
         Parser().write_file(
-            "{}.json".format(self.attrs["name"]),
+            u"{}.json".format(self.attrs["name"]),
             json.dumps(
                 self.attrs,
                 indent=JSON_INDENT
@@ -286,7 +316,7 @@ class MacrosTagHandler(TagHandler):
         data = clear_data(self.io.getvalue())
         if data:
             Parser().write_file(
-                "{}.icon".format(self.attrs["name"]),
+                u"{}.icon".format(self.attrs["name"]),
                 base64.b64decode(self.io.getvalue())
             )
 
@@ -403,7 +433,7 @@ class Parser(object):
 
     @property
     def current_xml_path(self):
-        return " > ".join(map(str, self.tag_handlers))
+        return u" > ".join(map(str, self.tag_handlers))
 
     @property
     def current_handler(self):
@@ -444,7 +474,7 @@ class Parser(object):
     def start(self):
         """Setup logging and start main process
         """
-        self.dst = create_dir(self.dst or "Application")
+        self.dst = create_dir(self.dst or u"Plugin")
         self.append_to_current_path(self.dst)
 
         RootHandler().register()
