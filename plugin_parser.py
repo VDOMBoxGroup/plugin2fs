@@ -428,7 +428,7 @@ class Parser(object):
         path = build_path(self.current_path(), name)
         print path
 
-        with open(path, "w") as f:
+        with open(path, "wb") as f:
             f.write(data)
 
     @property
