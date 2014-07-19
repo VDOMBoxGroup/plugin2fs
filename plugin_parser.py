@@ -424,11 +424,11 @@ class Parser(object):
     def pop_from_current_path(self):
         return self._current_path.pop()
 
-    def write_file(self, name, data):
+    def write_file(self, name, data, mode="wb"):
         path = build_path(self.current_path(), name)
         print path
 
-        with open(path, "wb") as f:
+        with open(path, mode) as f:
             f.write(data)
 
     @property
