@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import base64
+import cgi
 import collections
 import cStringIO
 import json
@@ -38,6 +39,9 @@ def check_data(data):
 
 
 def cdata(data, force=False):
+    # remove return after application fixes
+    return data
+    
     if not data.strip() and not force:
         return data
 
@@ -250,7 +254,7 @@ class Builder(object):
                     self.write_xml("macros_picture", data=base64.b64encode(icon_file.read()), indent=4, close=True)
 
             with self.open_file(os.path.join(macroses_path, name)) as macro_file:
-                self.write_xml("source", data=macro_file.read(), indent=4, close=True)
+                self.write_xml("source", data=cgi.escape(macro_file.read()), indent=4, close=True)
 
             self.write_xml("macro", closing=True, indent=2)
 
