@@ -260,9 +260,10 @@ class MacrosTagHandler(TagHandler):
 
     def child_start(self, tagname, attrs):
         if tagname in ("name", "class_name", "is_button",
-                       "on_board", "guid", "timer_guid",
+                       "ob_board", "guid", "timer_guid",
                        "custom_event_guid", "page", "type",
-                       "macros_picture", "source", "description"):
+                       "macros_picture", "source", "description",
+                       "ob_board"):
 
             self.allow_data = True
             self.current_attr = tagname
@@ -271,8 +272,8 @@ class MacrosTagHandler(TagHandler):
         self.allow_data = False
 
         if tagname in ("name", "class_name", "is_button",
-                       "on_board", "guid", "timer_guid",
-                       "custom_event_guid", "page", "type", "source"):
+                       "ob_board", "guid", "timer_guid",
+                       "custom_event_guid", "page", "type","source"):
 
             self.attrs[self.current_attr] = clear_data("".join(self.attrs[self.current_attr]))
 
@@ -288,7 +289,7 @@ class MacrosTagHandler(TagHandler):
     def child_data(self, data):
         if self.allow_data:
             if self.current_attr in ("name", "class_name", "is_button",
-                                     "on_board", "guid", "timer_guid",
+                                     "ob_board", "guid", "timer_guid",
                                      "custom_event_guid", "page", "type",
                                      "source", "description"):
 
